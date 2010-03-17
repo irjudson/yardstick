@@ -53,21 +53,34 @@ You can set thresholds, as well as check that the threshold matches the
 actual coverage, forcing you to bump it up if the actual coverage has
 increased.  It uses a simple DSL to configure the task eg:
 
-    # measure coverage
+    # Require necessary files
 
+    require 'yardstick'
     require 'yardstick/rake/measurement'
-
-    Yardstick::Rake::Measurement.new(:yardstick_measure) do |measurement|
-      measurement.output = 'measurement/report.txt'
-    end
-
-
-    # verify coverage
-
     require 'yardstick/rake/verify'
+  
+    # Namespace the yardstick tasks
 
-    Yardstick::Rake::Verify.new do |verify|
-      verify.threshold = 100
+    namespace :yardstick do
+
+      # Measure documentation coverage
+      # This works for a rails app that keeps most of the code in the app and lib dir
+      # For a non-rails app: measurement.path = 'lib/**/*.rb' works just fine.
+      # This stores the report in doc/yardstick-report.txt because that seems appropriate
+
+      Yardstick::Rake::Measurement.new(:measure) do |measurement|
+        measurement.path = ['lib/**/*.rb', 'app/**/*.rb']
+        measurement.output = 'doc/yardstick-report.txt'
+      end
+     
+      # Verify documentation coverage
+      # This sets the threshold to 100%, so
+      # this task will execute successfully if the code is 100% documented,
+      # this task will fail if not
+      
+      Yardstick::Rake::Verify.new(:verify) do |verify|
+        verify.threshold = 100
+      end
     end
 
 
